@@ -4,14 +4,15 @@
 #include <math.h>
 #define PI 3.14
 
-Circulo::Circulo(float x, float y, float R, float G, float B)
+Circulo::Circulo(float raio, float x, float y, float R, float G, float B, int tipo)
 {
-  this->raio = 51;
+  this->raio = raio;
   this->corR = R;
   this->corG = G;
   this->corB = B;
   this->x = x;
   this->y = y;
+  this->tipo = tipo;
 };
 
 

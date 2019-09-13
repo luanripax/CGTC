@@ -2,8 +2,9 @@ class Circulo
 {
   private:
   float raio, corR, corG, corB, x, y;
+  int tipo;
   public:
-    Circulo(float x, float y, float R, float G, float B);
+    Circulo(float raio, float x, float y, float R, float G, float B, int tipo);
     float getRaio();
     void setRaio(float raio);
     float getR();

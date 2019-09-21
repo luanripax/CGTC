@@ -352,33 +352,54 @@ void idle(int x)
       float distFutura;
       distFutura = distanciaArena(Aviao->getx() - vel, Aviao->gety());
       if(distFutura <= distLimite) {
-      	Aviao->setx(Aviao->getx() - vel);
+      	// se nao estiver em colisao
+      	if(!colisaoInimigos(Aviao->getx() - vel, Aviao->gety(), Aviao->getx(), Aviao->gety()))
+      		Aviao->setx(Aviao->getx() - vel);
+      	else {
+      		//cout << distAux;
+      		// pegar distancia do inimigo
+      		// distlimite  = 2 * raio do inimigo
+      		Aviao->setx(Aviao->getx() - (distAux - 40));	
+      	}
       } else {
       	Aviao->setx(Aviao->getx() - (distLimite - distAtual));	
       }
-      //Aviao->sety(Aviao->gety() - vel);
     }
 
     if (s == true) {
       float distFutura;
       distFutura = distanciaArena(Aviao->getx(), Aviao->gety() + vel);
       if(distFutura <= distLimite) {
-      	Aviao->sety(Aviao->gety() + vel);
+      	// se nao estiver em colisao
+      	if(!colisaoInimigos(Aviao->getx(), Aviao->gety() + vel, Aviao->getx(), Aviao->gety()))
+      		Aviao->sety(Aviao->gety() + vel);
+      	else {
+      		//cout << distAux;
+      		// pegar distancia do inimigo
+      		// distlimite  = 2 * raio do inimigo
+      		Aviao->sety(Aviao->gety() + (distAux - 40));	
+      	}
       } else {
       	Aviao->sety(Aviao->gety() + (distLimite - distAtual));	
       }
-      //Aviao->sety(Aviao->gety() - vel);
     }
 
     if (d == true) {
       float distFutura;
       distFutura = distanciaArena(Aviao->getx() + vel, Aviao->gety());
       if(distFutura <= distLimite) {
-      	Aviao->setx(Aviao->getx() + vel);
+      	// se nao estiver em colisao
+      	if(!colisaoInimigos(Aviao->getx() + vel, Aviao->gety(), Aviao->getx(), Aviao->gety()))
+      		Aviao->setx(Aviao->getx() + vel);
+      	else {
+      		//cout << distAux;
+      		// pegar distancia do inimigo
+      		// distlimite  = 2 * raio do inimigo
+      		Aviao->setx(Aviao->getx() + (distAux - 40));	
+      	}
       } else {
       	Aviao->setx(Aviao->getx() + (distLimite - distAtual));	
       }
-      //Aviao->sety(Aviao->gety() - vel);
     }
   }
   glutPostRedisplay();

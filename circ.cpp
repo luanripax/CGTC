@@ -82,3 +82,11 @@ float Circulo::gety(){//Ajusta a coordenada X do Centro
 void Circulo::sety(float r){//Ajusta a coordenada X do Centro
     this->y = r;
 }
+
+int Circulo::getTipo(){//Ajusta a coordenada X do Centro
+    return this->tipo;
+}
+
+void Circulo::setTipo(int r){//Ajusta a coordenada X do Centro
+    this->tipo = r;
+}

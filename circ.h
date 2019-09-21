@@ -17,7 +17,8 @@ class Circulo
     void setx(float b);
      float gety();
     void sety(float b);
+    int getTipo();
+    void setTipo(int r);
     void draw(Circulo *circ);
     Circulo* drag(Circulo *sqr, float x, float y);
 };
-

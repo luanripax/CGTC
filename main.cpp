@@ -8,8 +8,11 @@
 #include <list>
 #include "tinyxml.h"
 #include "circ.h"
+#include "rec.h"
 #define PI 3.14159265359
 #define FPS 60
+#define LAMBDA 18
+#define LAMBDA2 225
 using namespace std;
 
 int estado;
@@ -59,6 +62,7 @@ float distanciaArrasto;
 
 long int inicial = time(NULL);
 long int final, quadros = 0;
+float vel = 0.008;
 
 // titulo
 //std::string titulo;
@@ -70,11 +74,15 @@ Circulo *arrastado;
 
 Circulo *Arena;
 Circulo *Aviao;
+Retangulo *Pista;
+
+float deslocamento = 0;
 
 // 0 - Arena 1 - Aviao 2 - Inimigo Aereo 3 - Inimigo terrestre
 
 //lista de circulos
 std::list<Circulo *> circulos;
+std::list<Circulo *> inimigos;
 
 float raioAviao = 10;
 float deslocx = 0;
@@ -82,6 +90,8 @@ bool startGame = false;
 bool primeiroDesenho = false;
 float first = 0;
 float distanciaDecolar = 200;
+float tamPista;
+float distLimite;
 
 void init(void);
 void display(void);
@@ -279,18 +289,97 @@ void keyup(unsigned char key, int x, int y)
   //glutPostRedisplay();
 }
 
+float distAux;
+
+bool colisaoInimigos(float xFuturo, float yFuturo, float xAtual, float yAtual)
+{
+
+  colisao = false;
+  float distancia;
+  for (std::list<Circulo *>::iterator it = inimigos.begin(); it != inimigos.end(); it++)
+  {
+    distancia += sqrt(pow((*it)->getx() - xFuturo, 2) + pow((*it)->gety() - yFuturo, 2));
+    if (distancia < (2 * (*it)->getRaio()) && (*it)->getTipo() == 2)
+    {
+      distAux = sqrt(pow((*it)->getx() - xAtual, 2) + pow((*it)->gety() - yAtual, 2));
+      colisao = true;
+    }
+    distancia = 0;
+  }
+  if (colisao)
+    return true;
+  else
+    return false;
+}
+
+
+float distanciaArena(float x, float y)
+{
+    float distancia;
+    distancia = sqrt(pow(Arena->getx() - x, 2) + pow(Arena->gety() - y, 2));
+    return distancia;
+}
+
+
 void idle(int x)
 {
+  distLimite = ( Arena->getRaio() - Aviao->getRaio() ) ;
   if (!startGame)
   {
-    if (w == true)
-      dy = dy + 0.1;
-    if (a == true)
-      dx = dx - 0.1;
-    if (s == true)
-      dy = dy - 0.1;
-    if (d == true)
-      dx = dx + 0.1;
+  	float distAtual;
+    distAtual = distanciaArena(Aviao->getx(), Aviao->gety());
+
+    if (w == true) {
+      float distFutura;
+      distFutura = distanciaArena(Aviao->getx(), Aviao->gety() - vel);
+      if(distFutura <= distLimite) {
+      	// se nao estiver em colisao
+      	if(!colisaoInimigos(Aviao->getx(), Aviao->gety() - vel, Aviao->getx(), Aviao->gety()))
+      		Aviao->sety(Aviao->gety() - vel);
+      	else {
+      		//cout << distAux;
+      		// pegar distancia do inimigo
+      		// distlimite  = 2 * raio do inimigo
+      		Aviao->sety(Aviao->gety() - (distAux - 40));	
+      	}
+      } else {
+      	Aviao->sety(Aviao->gety() - (distLimite - distAtual));	
+      }
+      //Aviao->sety(Aviao->gety() - vel);
+    }
+
+    if (a == true) {
+      float distFutura;
+      distFutura = distanciaArena(Aviao->getx() - vel, Aviao->gety());
+      if(distFutura <= distLimite) {
+      	Aviao->setx(Aviao->getx() - vel);
+      } else {
+      	Aviao->setx(Aviao->getx() - (distLimite - distAtual));	
+      }
+      //Aviao->sety(Aviao->gety() - vel);
+    }
+
+    if (s == true) {
+      float distFutura;
+      distFutura = distanciaArena(Aviao->getx(), Aviao->gety() + vel);
+      if(distFutura <= distLimite) {
+      	Aviao->sety(Aviao->gety() + vel);
+      } else {
+      	Aviao->sety(Aviao->gety() + (distLimite - distAtual));	
+      }
+      //Aviao->sety(Aviao->gety() - vel);
+    }
+
+    if (d == true) {
+      float distFutura;
+      distFutura = distanciaArena(Aviao->getx() + vel, Aviao->gety());
+      if(distFutura <= distLimite) {
+      	Aviao->setx(Aviao->getx() + vel);
+      } else {
+      	Aviao->setx(Aviao->getx() + (distLimite - distAtual));	
+      }
+      //Aviao->sety(Aviao->gety() - vel);
+    }
   }
   glutPostRedisplay();
   primeiroDesenho = true;
@@ -304,6 +393,64 @@ const char *caminho;
 float velocidade;
 
 float cx, cy;
+
+void desenhaArena() {
+
+  float angulo;
+  //int num_linhas;
+  glColor3f(Arena->getR(), Arena->getG(), Arena->getB());
+  glBegin(GL_POLYGON);
+  for (int i = 0; i < 1000; i++)
+  {
+    angulo = i * 2 * M_PI / 1000;
+    glVertex2f(largura + (cos(angulo) * Arena->getRaio()), largura + (sin(angulo) * Arena->getRaio()));
+  }
+  glEnd();
+}
+
+void desenhaAviao() {
+
+  float angulo;
+  //int num_linhas;
+  glColor3f(Aviao->getR(), Aviao->getG(), Aviao->getB());
+  glBegin(GL_POLYGON);
+  for (int i = 0; i < 1000; i++)
+  {
+    angulo = i * 2 * M_PI / 1000;
+    glVertex2f(Aviao->getx() + (cos(angulo) * Aviao->getRaio()), Aviao->gety() + (sin(angulo) * Aviao->getRaio()));
+  }
+  glEnd();
+}
+
+void desenhaPista() {
+
+  glColor3f(0, 0, 0);
+  glBegin(GL_LINES);
+    	glVertex2f(Pista->getx1(), Pista->gety1());
+   		glVertex2f(Pista->getx2(), Pista->gety2());
+  glEnd();
+}
+
+void desenhaInimigos()
+{
+
+  for (std::list<Circulo *>::iterator it = inimigos.begin(); it != inimigos.end(); it++)
+  {
+
+    float angulo;
+    //int num_linhas;
+    glColor3f((*it)->getR(), (*it)->getG(), (*it)->getB());
+    glBegin(GL_POLYGON);
+    for (int i = 0; i < 1000; i++)
+    {
+      angulo = i * 2 * M_PI / 1000;
+      glVertex2f((*it)->getx() + (cos(angulo) * (*it)->getRaio()), (*it)->gety() + (sin(angulo) * (*it)->getRaio()));
+    }
+
+    glEnd();
+  }
+  //glutPostRedisplay();
+}
 
 // funcao principal
 int main(int argc, char **argv)
@@ -346,53 +493,102 @@ int main(int argc, char **argv)
 
   TiXmlElement *leitura2 = docHandle2.FirstChild("svg").Child("circle", 0).ToElement();
 
-  float wraio, wx, wy, wr, wg, wb, wtipo;
+  float wraio, wx, wy, wg, wb, wtipo;
+  const char* fill;
   while(leitura2) {
 
-    wx = atof(leitura2->Attribute("cx"));
-    wy = atof(leitura2->Attribute("cy"));
-    wraio = atof(leitura2->Attribute("r"));
+    fill = leitura2->Attribute("fill");
 
-    cout << wx <<" "<<  wy << " "<< wraio << endl;
-    
+    if (strcmp(fill, "blue") == 0) {
+    	largura = atof(leitura2->Attribute("r"));
+  		altura = atof(leitura2->Attribute("r"));
+  		wx = atof(leitura2->Attribute("cx"));
+  		deslocamento = abs(wx - largura);
+  		//printf("%f\n", deslocamento);
+		Arena = new Circulo(largura, largura, altura, 0, 0, 254, 0);
+    }
     leitura2 = leitura2->NextSiblingElement("circle");
   }
 
-  //caminho = leitura2->Attribute("fill");
+  // garantir o deslocamento
 
-  //largura = atof(leitura2->Attribute("r"));
-  //altura = atof(leitura2->Attribute("r"));
+  leitura2 = docHandle2.FirstChild("svg").Child("circle", 0).ToElement();
 
-  //leitura2 = docHandle2.FirstChild("svg").Child("circle", 1).ToElement();
+  while(leitura2) {
 
-  //cx = atof(leitura2->Attribute("cx"));
-  //cy = atof(leitura2->Attribute("cy"));
+    fill = leitura2->Attribute("fill");
 
-  Arena = new Circulo(10, 20, Mousey, corR, corG, corB, 0);
+    if (strcmp(fill, "green") == 0) {
+    	wraio = atof(leitura2->Attribute("r"));
+  		wx = atof(leitura2->Attribute("cx"));
+  		wy = atof(leitura2->Attribute("cy"));
+  		//deslocamento = wx - largura;
+  		//printf("%f\n", deslocamento);
+		Aviao = new Circulo(wraio, wx-deslocamento, wy-deslocamento, 0, 1, 0, 1);
+    }
 
-  Aviao = new Circulo(10, 20, Mousey, corR, corG, corB, 0);
+    if (strcmp(fill, "red") == 0) {
+    	wraio = atof(leitura2->Attribute("r"));
+  		wx = atof(leitura2->Attribute("cx"));
+  		wy = atof(leitura2->Attribute("cy"));
+  		//deslocamento = wx - largura;
+  		//printf("%f\n", deslocamento);
+		circ = new Circulo(wraio, wx-deslocamento, wy-deslocamento, 1, 0, 0, 2);
+		inimigos.push_front(circ);
+    }
 
-  //cout << cx;
+    if (strcmp(fill, "orange") == 0) {
+    	wraio = atof(leitura2->Attribute("r"));
+  		wx = atof(leitura2->Attribute("cx"));
+  		wy = atof(leitura2->Attribute("cy"));
+  		//deslocamento = wx - largura;
+  		//printf("%f\n", deslocamento);
+		circ = new Circulo(wraio, wx-deslocamento, wy-deslocamento, 1, 1, 0, 3);
+		inimigos.push_front(circ);
+    }
 
-  //inicialização do programa
-  //circMouse = new Circulo(0,0, corModelR, corModelG, corModelB); // instancia circulo do mouse
 
-  //glutInit(&argc, argv);                       // inicializa o glut
-  //glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); // especifica o uso de cores e buffers
-  //glutInitWindowSize(2 * largura, 2 * altura); // especifica as dimensoes da janela
-  //glutInitWindowPosition(100, 100);            // especifica aonde a janela aparece na tela
-  //glutCreateWindow(titulo);                    // cria a janela
-  //init();
+    leitura2 = leitura2->NextSiblingElement("circle");
+  }
+
+  //cout << inimigos.size();
+
+  // PARA FAZER LEITURA DO RETANGULO
+
+  float wx1, wx2, wy1, wy2;
+
+  leitura2 = docHandle2.FirstChild("svg").Child("line", 0).ToElement();
+
+   wx1 = atof(leitura2->Attribute("x1"));
+   wy1 = atof(leitura2->Attribute("y1"));
+   wx2 = atof(leitura2->Attribute("x2"));
+   wy2 = atof(leitura2->Attribute("y2"));
+
+   Pista = new Retangulo(wx1-deslocamento,wx2-deslocamento,wy1-deslocamento, wy2-deslocamento);
+   tamPista = wx2 - wx1;
+
+   distLimite = ( Arena->getRaio() - Aviao->getRaio() ) ;
+
+   //cout << distLimite;
+
+   //cout << wx1 << " " << wy1 << " " << wx2  << " " << wy2 << endl;
+
+  glutInit(&argc, argv);                       // inicializa o glut
+  glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); // especifica o uso de cores e buffers
+  glutInitWindowSize(2 * largura, 2 * altura); // especifica as dimensoes da janela
+  glutInitWindowPosition(100, 100);            // especifica aonde a janela aparece na tela
+  glutCreateWindow(titulo);                    // cria a janela
+  init();
 
   //glutPassiveMotionFunc(MouseAndandoSolto);
   //glutMotionFunc(MouseAndandoClicado);
   //glutMouseFunc(ClicarMouse);
 
-  //glutDisplayFunc(display);
-  //glutKeyboardFunc(GerenciaTeclado);
-  //glutKeyboardUpFunc(keyup);
-  //glutTimerFunc(1000 / FPS, idle, 0); // funcao que sera redesenhada pelo GLUT
-  //glutMainLoop();
+  glutDisplayFunc(display);
+  glutKeyboardFunc(GerenciaTeclado);
+  glutKeyboardUpFunc(keyup);
+  glutTimerFunc(1000 / FPS, idle, 0); // funcao que sera redesenhada pelo GLUT
+  glutMainLoop();
   //} else {
   // cout << "[ERRO]: Não foi encontrado o arquivo config.xml\n";
   // exit(0);
@@ -407,33 +603,35 @@ void init(void)
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity(); // cor de fundo
   //glMatrixMode(GL_PROJECTION);
-  //gluOrtho2D(0.0, largura, altura, 0.0);
+  //gluOrtho2D(0.0, 2*largura, 2*altura, 0.0);
   //glOrtho(0.0,1.0,0.0,1.0,-1.0,1.0);     // modo de projecao ortogonal
-  glOrtho(0.0, 2 * largura, 0.0, 2 * altura, -2.0, 1.0);
+  glOrtho(0, 2 * largura, 2 * largura, 0, 1, -2);
 }
+
 
 void display(void)
 {
   if (startGame)
   {
-    raioAviao += 0.05;
-    deslocx += 0.8;
-    if (deslocx >= 150)
+  	Aviao->setRaio(Aviao->getRaio() + 0.045);
+  	Aviao->setx(Aviao->getx() + vel);
+  	vel = vel + 0.008;
+    if (Aviao->getx() >= 603.0 - deslocamento) {
       startGame = false;
+      Aviao->setRaio(20);
+    }
   }
   glClear(GL_COLOR_BUFFER_BIT);
 
-  float angulo;
-  //int num_linhas;
-  glColor3f(0, 0, 254);
-  glBegin(GL_POLYGON);
-  for (int i = 0; i < 1000; i++)
-  {
-    angulo = i * 2 * M_PI / 1000;
-    glVertex2f(largura + (cos(angulo) * largura), largura + (sin(angulo) * largura));
-  }
-  glEnd();
+  desenhaArena();
 
+  desenhaPista();
+
+  desenhaInimigos();
+
+  desenhaAviao();
+
+  /*
   glColor3f(11.0, 130.0, 30.0);
   glBegin(GL_POLYGON);
   for (int i = 0; i < 1000; i++)
@@ -451,14 +649,15 @@ void display(void)
     glVertex2f(largura + (cos(angulo) * 20), largura + (sin(angulo) * 20));
   }
   glEnd();
-
-  quadros++;
+	*/
+	  quadros++;
   final = time(NULL);
   if (final - inicial > 0)
   {
     cout << "Fps: " << quadros / (final - inicial) << endl;
     quadros = 0;
     inicial = final;
+    cout << vel;
   }
 
   //while(!startGame);

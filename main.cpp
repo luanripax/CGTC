@@ -207,7 +207,7 @@ void desenhaCirculosTela()
 
     glEnd();
   }
-  //glutPostRedisplay()
+  //glutPostRedisplay();
 }
 
 void MouseAndandoSolto(int x, int y)

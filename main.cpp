@@ -11,8 +11,7 @@
 #include "rec.h"
 #define PI 3.14159265359
 #define FPS 60
-#define LAMBDA 18
-#define LAMBDA2 225
+#define LAMBDA 111.11
 using namespace std;
 
 int estado;
@@ -62,7 +61,8 @@ float distanciaArrasto;
 
 long int inicial = time(NULL);
 long int final, quadros = 0;
-float vel = 0.008;
+float vel;
+bool fimDecolagem = false;
 
 // titulo
 //std::string titulo;
@@ -96,145 +96,6 @@ float distLimite;
 void init(void);
 void display(void);
 void keyboard(unsigned char key, int x, int y);
-
-bool detectaColisao(float x, float y)
-{
-
-  colisao = false;
-  float distancia;
-  for (std::list<Circulo *>::iterator it = circulos.begin(); it != circulos.end(); it++)
-  {
-    distancia += sqrt(pow((*it)->getx() - x, 2) + pow((*it)->gety() - y, 2));
-    if (distancia < 2 * raio)
-    {
-      circMouse->setR(corSobreR);
-      circMouse->setG(corSobreG);
-      circMouse->setB(corSobreB);
-      colisao = true;
-    }
-    distancia = 0;
-  }
-  if (colisao == false)
-  {
-    circMouse->setR(corModelR);
-    circMouse->setG(corModelG);
-    circMouse->setB(corModelB);
-  }
-  if (colisao)
-    return true;
-  else
-    return false;
-}
-
-bool teste;
-void ClicarMouse(int button, int state, int x, int y)
-{
-  Mousex = x;
-  Mousey = (altura - y);
-
-  teste = detectaColisao(Mousex, Mousey);
-  estado = state;
-  botao = button;
-  if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-  {
-    teste = detectaColisao(Mousex, Mousey);
-    if (!teste)
-    {
-      //circ = new Circulo(x, Mousey, corR, corG, corB);
-      circulos.push_front(circ);
-      click = true;
-    }
-  }
-  if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP)
-  {
-    //momento que se solta
-    arrastando = false;
-    glutPostRedisplay();
-  }
-  if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
-  {
-    float distancia;
-    for (std::list<Circulo *>::iterator it = circulos.begin(); it != circulos.end(); it++)
-    {
-      distancia += sqrt(pow((*it)->getx() - x, 2) + pow((*it)->gety() - Mousey, 2));
-      if (distancia <= raio)
-      {
-        //cout << "ta em um circulo\n";
-        arrastando = true;
-        arrastado = *it;
-        //distanciaArrasto = distancia;
-        //ax = Mousex;
-        //ay = Mousey;
-      }
-      distancia = 0;
-    }
-  }
-}
-
-void desenhaCirculoModelo(GLint x, GLint y, GLint raio, int num_linhas)
-{
-
-  float angulo;
-  //int num_linhas;
-  glColor3f(circMouse->getR(), circMouse->getG(), circMouse->getB());
-  glBegin(GL_LINE_LOOP);
-  for (int i = 0; i < num_linhas; i++)
-  {
-    angulo = i * 2 * M_PI / num_linhas;
-    if (desenhar)
-      glVertex2f(x + (cos(angulo) * raio), y + (sin(angulo) * raio));
-  }
-
-  glEnd();
-  glutPostRedisplay();
-}
-
-void desenhaCirculosTela()
-{
-
-  for (std::list<Circulo *>::iterator it = circulos.begin(); it != circulos.end(); it++)
-  {
-
-    float angulo;
-    //int num_linhas;
-    glColor3f((*it)->getR(), (*it)->getG(), (*it)->getB());
-    glBegin(GL_POLYGON);
-    for (int i = 0; i < 1000; i++)
-    {
-      angulo = i * 2 * M_PI / 1000;
-      glVertex2f((*it)->getx() + (cos(angulo) * raio), (*it)->gety() + (sin(angulo) * raio));
-    }
-
-    glEnd();
-  }
-  //glutPostRedisplay();
-}
-
-void MouseAndandoSolto(int x, int y)
-{
-
-  //drawHollowCircle(x,y,raio);
-  //Mousex = x;
-  // Mousey = (altura - y);
-  //detectaColisao(x, Mousey);
-  //desenhar = true;
-  //printf("Mouse ANDANDO solto na janela. Posição: (%d, %d)\n", x,y);
-}
-
-void MouseAndandoClicado(int x, int y)
-{
-  Mousex = x;
-  Mousey = (altura - y);
-  // SEMPRE ESTA EM GLUT DOWN ENQUANTO SE MOVE
-  if (arrastando)
-  {
-    //printf("Mouse DIREITO ANDANDO pressionado na janela. ESTADO: %d Posição: (%d, %d)\n",estado, x,y);
-    arrastado->setx(x);
-    arrastado->sety(Mousey);
-  }
-  //if(botao == GLUT_LEFT_BUTTON)
-  //printf("Mouse  ESQUERDO ANDANDO Pressionadoado na janela. Posição: (%d, %d)\n", x,y);
-}
 
 float dx, dy;
 void GerenciaTeclado(unsigned char key, int x, int y)
@@ -271,6 +132,7 @@ void keyup(unsigned char key, int x, int y)
     break;
   case 'u':
     //dy = dy + 3.0;
+    if(!fimDecolagem)
     startGame = true;
     break;
   case 'a':
@@ -405,7 +267,6 @@ void idle(int x)
   glutPostRedisplay();
   primeiroDesenho = true;
   glutTimerFunc(1000 / FPS, idle, 0);
-  //usleep(1000);
 }
 
 const char *nome;
@@ -473,6 +334,10 @@ void desenhaInimigos()
   //glutPostRedisplay();
 }
 
+float velocidadeIdeal;
+float aceleracaoIdeal;
+float deltax, deltay;
+float raioOriginal;
 // funcao principal
 int main(int argc, char **argv)
 {
@@ -502,6 +367,8 @@ int main(int argc, char **argv)
   leitura = docHandle.FirstChild("aplicacao").FirstChild("jogador").ToElement();
 
   velocidade = atof(leitura->Attribute("vel"));
+
+  //vel = (velocidade/LAMBDA2);
   // fim da leitura do primeiro XML
   char *nomeSVG = strdup(nome);
   char *tipoSVG = strdup(tipo);
@@ -543,9 +410,10 @@ int main(int argc, char **argv)
     	wraio = atof(leitura2->Attribute("r"));
   		wx = atof(leitura2->Attribute("cx"));
   		wy = atof(leitura2->Attribute("cy"));
+      raioOriginal = wraio;
   		//deslocamento = wx - largura;
   		//printf("%f\n", deslocamento);
-		Aviao = new Circulo(wraio, wx-deslocamento, wy-deslocamento, 0, 1, 0, 1);
+		Aviao = new Circulo(wraio, wx-deslocamento, wy-deslocamento, 0, 0.8, 0, 1);
     }
 
     if (strcmp(fill, "red") == 0) {
@@ -564,10 +432,9 @@ int main(int argc, char **argv)
   		wy = atof(leitura2->Attribute("cy"));
   		//deslocamento = wx - largura;
   		//printf("%f\n", deslocamento);
-		circ = new Circulo(wraio, wx-deslocamento, wy-deslocamento, 1, 1, 0, 3);
+		circ = new Circulo(wraio, wx-deslocamento, wy-deslocamento, 1, 0.65, 0, 3);
 		inimigos.push_front(circ);
     }
-
 
     leitura2 = leitura2->NextSiblingElement("circle");
   }
@@ -585,14 +452,29 @@ int main(int argc, char **argv)
    wx2 = atof(leitura2->Attribute("x2"));
    wy2 = atof(leitura2->Attribute("y2"));
 
-   Pista = new Retangulo(wx1-deslocamento,wx2-deslocamento,wy1-deslocamento, wy2-deslocamento);
-   tamPista = wx2 - wx1;
+   //cout << wx1 << " " << wy1 << " " << wx2  << " " << wy2 << endl;
+   //cout << deslocamento;
 
+   deltax = abs(wx2 - wx1);
+   deltay = abs(wy2 - wy1);
+
+   cout << deltay;
+   cout << deltax;
+
+   Pista = new Retangulo(wx1-deslocamento,wx2-deslocamento,wy1-deslocamento, wy2-deslocamento);
+
+  //cout << Pista->getx2();
+
+   tamPista = sqrt(pow(wx1 - wx2, 2) + pow(wy1 - wy2, 2));
    distLimite = ( Arena->getRaio() - Aviao->getRaio() ) ;
 
-   //cout << distLimite;
+   velocidadeIdeal = tamPista/LAMBDA;
+   aceleracaoIdeal = ( pow(velocidadeIdeal, 2) / (2*tamPista) );
 
-   //cout << wx1 << " " << wy1 << " " << wx2  << " " << wy2 << endl;
+  vel = aceleracaoIdeal;
+  //cout << aceleracaoIdeal;
+
+
 
   glutInit(&argc, argv);                       // inicializa o glut
   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); // especifica o uso de cores e buffers
@@ -623,23 +505,57 @@ void init(void)
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity(); // cor de fundo
-  //glMatrixMode(GL_PROJECTION);
   //gluOrtho2D(0.0, 2*largura, 2*altura, 0.0);
   //glOrtho(0.0,1.0,0.0,1.0,-1.0,1.0);     // modo de projecao ortogonal
   glOrtho(0, 2 * largura, 2 * largura, 0, 1, -2);
 }
 
+// crescer so apartir da metade da pista
+// ajustar as questoes da aceleração
+// ajustar a passagem do caminho relativo
 
 void display(void)
 {
   if (startGame)
   {
-  	Aviao->setRaio(Aviao->getRaio() + 0.045);
-  	Aviao->setx(Aviao->getx() + vel);
-  	vel = vel + 0.008;
-    if (Aviao->getx() >= 603.0 - deslocamento) {
+    if(Aviao->getx() >= 503 - deslocamento)
+  	  Aviao->setRaio(Aviao->getRaio() + 0.15);
+    
+    //cout << Aviao->getRaio();
+
+    if(deltax > 0 && deltay == 0) {
+        	Aviao->setx(Aviao->getx() + vel);
+          //Aviao->sety(Aviao->gety() - vel/2);
+    }
+
+    if(deltay > 0 && deltax == 0) {
+        	//Aviao->setx(Aviao->getx() + vel);
+          Aviao->sety(Aviao->gety() - vel);
+    }
+
+    if(deltax > 0 && deltay > 0) {
+          if(deltax > deltay) {
+        	Aviao->setx(Aviao->getx() + vel);
+          Aviao->sety(Aviao->gety() - vel/(deltax/deltay));
+          }
+          if(deltay > deltax) {
+        	Aviao->setx(Aviao->getx() + vel/(deltay/deltax));
+          Aviao->sety(Aviao->gety() - vel);
+          }
+          if(deltay == deltax) {
+        	Aviao->setx(Aviao->getx() + vel);
+          Aviao->sety(Aviao->gety() - vel);
+          }
+    }
+
+  	vel = vel + aceleracaoIdeal;
+
+    //printf("%.2f", Pista->getx2());
+    if (Aviao->getx() >= Pista->getx2()  && Aviao->gety() <= Pista->gety2() && sqrt(pow(Pista->getx2() - Aviao->getx(), 2) + pow(Pista->gety2() - Aviao->gety(), 2)) >= 2*raioOriginal) {
       startGame = false;
       Aviao->setRaio(20);
+      vel = vel * velocidade;
+      fimDecolagem = true;
     }
   }
   glClear(GL_COLOR_BUFFER_BIT);
@@ -652,25 +568,6 @@ void display(void)
 
   desenhaAviao();
 
-  /*
-  glColor3f(11.0, 130.0, 30.0);
-  glBegin(GL_POLYGON);
-  for (int i = 0; i < 1000; i++)
-  {
-    angulo = i * 2 * M_PI / 1000;
-    glVertex2f((largura + deslocx) + (cos(angulo) * raioAviao), largura + (sin(angulo) * raioAviao));
-  }
-  glEnd();
-
-  glColor3f(0, 15, 0);
-  glBegin(GL_POLYGON);
-  for (int i = 0; i < 1000; i++)
-  {
-    angulo = i * 2 * M_PI / 1000;
-    glVertex2f(largura + (cos(angulo) * 20), largura + (sin(angulo) * 20));
-  }
-  glEnd();
-	*/
 	  quadros++;
   final = time(NULL);
   if (final - inicial > 0)

@@ -575,7 +575,7 @@ void display(void)
     cout << "Fps: " << quadros / (final - inicial) << endl;
     quadros = 0;
     inicial = final;
-    cout << vel;
+    //cout << vel;
   }
 
   //while(!startGame);

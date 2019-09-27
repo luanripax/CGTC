@@ -348,7 +348,24 @@ int main(int argc, char **argv)
   //}
 
   // leitura do XML
-  TiXmlDocument doc(argv[1]);
+  //char *dir;
+  //dir = get_current_dir_name();
+  //char *argumento;
+  //strcpy(argumento, dir);
+  //std::string filename = argv[1];
+  //strcat(dir, argv[1]);
+  //strcat(dir, "config.xml");
+  //cout << argumento;
+  //cout << argv[1];
+
+  char cwd[512];
+  strcat(cwd, argv[1]);
+   strcat(cwd, "config.xml");
+
+  cout << cwd;
+
+  TiXmlDocument doc("config.xml");
+  
 
   doc.LoadFile();
   TiXmlHandle docHandle(&doc);
@@ -374,7 +391,7 @@ int main(int argc, char **argv)
   char *tipoSVG = strdup(tipo);
   strcat(nomeSVG, ".");
   strcat(nomeSVG, tipoSVG);
-  TiXmlDocument doc2(nomeSVG);
+  TiXmlDocument doc2("/home/luan/Área de Trabalho/CGTC2/arena.svg");
   //cout << nomeSVG;
   doc2.LoadFile();
   TiXmlHandle docHandle2(&doc2);
@@ -513,24 +530,58 @@ void init(void)
 // crescer so apartir da metade da pista
 // ajustar as questoes da aceleração
 // ajustar a passagem do caminho relativo
-
+float quadros2;
 void display(void)
 {
+  float dist;
   if (startGame)
   {
-    if(Aviao->getx() >= 503 - deslocamento)
+    if(dist = sqrt(pow(Aviao->getx() - Pista->getx2(), 2) + pow(Aviao->gety() - Pista->gety2(), 2)) <= tamPista/2 + raioOriginal) {
+
+      if(Aviao->getRaio() < 2*raioOriginal) {
+
+      if(tamPista > 200) {   
   	  Aviao->setRaio(Aviao->getRaio() + 0.15);
+      }
+      if(tamPista <= 200 && tamPista > 100) {
+        Aviao->setRaio(Aviao->getRaio() + 0.13);
+      }
+      if(tamPista <= 100 && tamPista > 50) {
+        Aviao->setRaio(Aviao->getRaio() + 0.1);
+      }
+      if(tamPista <= 50) {
+        Aviao->setRaio(Aviao->getRaio() + 0.072);
+      }
+      //printf("dist: %f", dist);
+      //startGame = false;
+      //cout << quadros2;
+    //dist = sqrt(pow(Aviao->getx() - Pista->getx2(), 2) + pow(Aviao->gety() - Pista->gety2(), 2));
+    //cout << d
+      }
+    }
+
+    //dist = sqrt(pow(Aviao->getx() - Pista->getx2(), 2) + pow(Aviao->gety() - Pista->gety2(), 2));
+    //cout << dist;
     
     //cout << Aviao->getRaio();
 
     if(deltax > 0 && deltay == 0) {
-        	Aviao->setx(Aviao->getx() + vel);
+
+          if(Pista->getx2() - Pista->getx1() > 0)
+        	  Aviao->setx(Aviao->getx() + vel);
+          if(Pista->getx2() - Pista->getx1() < 0)
+            Aviao->setx(Aviao->getx() - vel);
           //Aviao->sety(Aviao->gety() - vel/2);
     }
 
     if(deltay > 0 && deltax == 0) {
         	//Aviao->setx(Aviao->getx() + vel);
-          Aviao->sety(Aviao->gety() - vel);
+          //Aviao->sety(Aviao->gety() - vel);
+
+          if(Pista->gety2() - Pista->gety1() > 0)
+        	  Aviao->sety(Aviao->gety() + vel);
+          if(Pista->gety2() - Pista->gety1() < 0)
+            Aviao->sety(Aviao->gety() - vel);
     }
 
     if(deltax > 0 && deltay > 0) {
@@ -553,9 +604,11 @@ void display(void)
     //printf("%.2f", Pista->getx2());
     if (Aviao->getx() >= Pista->getx2()  && Aviao->gety() <= Pista->gety2() && sqrt(pow(Pista->getx2() - Aviao->getx(), 2) + pow(Pista->gety2() - Aviao->gety(), 2)) >= 2*raioOriginal) {
       startGame = false;
+      cout<< Aviao->getRaio();
       Aviao->setRaio(20);
       vel = vel * velocidade;
       fimDecolagem = true;
+      cout << tamPista;
     }
   }
   glClear(GL_COLOR_BUFFER_BIT);
@@ -568,6 +621,7 @@ void display(void)
 
   desenhaAviao();
 
+  quadros2++;
 	  quadros++;
   final = time(NULL);
   if (final - inicial > 0)

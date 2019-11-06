@@ -46,6 +46,12 @@ Circulo::Circulo(float raio, float x, float y, float R, float G, float B, int ti
     this->deltax2 = this->x - this->xAnt;
     this->deltay2 = this->y - this->yAnt;
     this->theta = atan2(this->deltay2, this->deltax2)*180/M_PI;
+    this->quadros = rand() % 60;
+    this->rodar = false;
+    this->z = this->theta*1000;
+    this->tiros = 0;
+    this->xini= x;
+    this->yini = y;
   }
   this->xAnt = 0;
   this->yAnt = 0;
@@ -54,6 +60,16 @@ Circulo::Circulo(float raio, float x, float y, float R, float G, float B, int ti
 //void Circulo::setTheta() {
  // float valor;
 //}
+void Circulo::update() {
+
+  this->deltax = abs(this->x - this->xAnt);
+  this->deltay = abs(this->y - this->yAnt);
+  this->deltax2 = this->x - this->xAnt;
+  this->deltay2 = this->y - this->yAnt;
+  this->theta = atan2(this->deltay2, this->deltax2)*180/M_PI;
+  //this->z = this->theta*1000;
+
+}
 float Circulo::getRaio(){//Ajusta a coordenada X do Centro
     return this->raio;
 }

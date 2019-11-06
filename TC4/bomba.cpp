@@ -4,7 +4,7 @@
 #include <math.h>
 #define PI 3.14
 
-Bomba::Bomba(float vel,float raio, float x, float y, float R, float G, float B, float deltax, float deltay, float px1, float px2, float py1, float py2, int tipo)
+Bomba::Bomba(float vel,float raio, float x, float y, float R, float G, float B, float deltax, float deltay, float px1, float px2, float py1, float py2, int tipo, int enemy)
 {
   this->raio = raio;
   this->corR = R;
@@ -24,6 +24,8 @@ Bomba::Bomba(float vel,float raio, float x, float y, float R, float G, float B, 
   this->raioOriginal = raio;
   this->ajuste = false;
   this->tipo = tipo;
+  this->enemy = enemy;
+  this->bug = 0;
 };
 
 bool Bomba::getajuste() {

@@ -4,8 +4,8 @@ class Bomba
   float raio, corR, corG, corB, x, y, px1, px2, py1, py2, xInicial, yInicial, ajuste;
   public:
     float deltax, deltay, vel, raioOriginal;
-    int tipo;
-    Bomba(float vel,float raio, float x, float y, float R, float G, float B, float deltax, float deltay, float px1, float px2, float py1, float py2, int tipo);
+    int tipo, enemy, bug;
+    Bomba(float vel,float raio, float x, float y, float R, float G, float B, float deltax, float deltay, float px1, float px2, float py1, float py2, int tipo, int enemy);
     float getRaio();
     void setRaio(float raio);
     float getR();

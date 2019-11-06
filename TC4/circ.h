@@ -3,9 +3,12 @@
 class Circulo
 {
   private:
-  float raio, corR, corG, corB, x, y, xAnt, yAnt, theta, scale, deltax, deltay, deltax2, deltay2;
+  float raio, corR, corG, corB, x, y, xAnt, yAnt, theta, scale;
   int tipo;
   public:
+    float deltax, deltay, deltax2, deltay2, z, xini, yini;
+    bool rodar;
+    int quadros, direcao, tempo, tiros;
     Circulo(float raio, float x, float y, float R, float G, float B, int tipo);
     float getRaio();
     void setRaio(float raio);
@@ -34,4 +37,5 @@ class Circulo
     void DesenhaInimigo(GLfloat x, GLfloat y, GLfloat thetaWheel, GLfloat scale, GLfloat thetaC, GLfloat theta3, GLfloat Raio, GLfloat R, GLfloat G, GLfloat B);
     //Circulo* drag(Circulo *sqr, float x, float y);
     void DesenhaAviao( float x, float y);
+    void update(); 
 };

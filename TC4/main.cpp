@@ -96,6 +96,7 @@ float deltax, deltay;
 float deltax2, deltay2;
 float raioOriginal;
 float xOriginal, yOriginal;
+float zOriginal;
 float pistax1Original, pistax2Original, pistay1Original, pistay2Original;
 float deltaxOriginal, deltayOriginal;
 float thetaOriginal;
@@ -127,6 +128,7 @@ float thetaHeliceInimigo=0;
 bool gameover = false;
 bool lose = false;
 int restanteOriginal;
+float angCanhao;
 
 void PrintScore(GLfloat x, GLfloat y)
 {
@@ -388,6 +390,7 @@ void desenhaBombas() {
     aux = (*it)->raioOriginal/2;
     (*it)->setRaio((*it)->getRaio() - aux/120);
 
+    
 
     if((*it)->deltax > 0 && (*it)->deltay == 0) { // Pista reta horizontalmente
 
@@ -680,33 +683,28 @@ void ClicarMouse(int button, int state, int x, int y)
 
 
       if(fimDecolagem) {
-      //printf("theta:%f y1:%f x2:%f y2:%f xc:%f yc:%f theta:%f delx:%f dely:%f\n", thetaHelice, Pista->gety1(), Pista->getx2(),Pista->gety2(), xc, yc, thetaHelice, deltx, delty);
-      /*
-        float x1, x2, y1, y2, mid1, mid2;
-      float x1a, x2a, y1a, y2a;
-      float angle = 2*180/M_PI;
-      float fator = 20;
-      mid1 = (Pista->getx1() + Pista->getx2())/2;
-      mid2 = (Pista->gety1() + Pista->gety2())/2;
 
-      x1a = Pista->getx1() - mid1;
-      y1a = Pista->gety1() - mid2;
+        //Pista->setx1(Aviao->getxAnt());
+      //Pista->sety1(Aviao->getyAnt());
+      //Pista->setx2(Aviao->getx());
+      //Pista->sety2(Aviao->gety());
+      //deltax = abs(Pista->getx2() - Pista->getx1());
+      //deltay = abs(Pista->gety2() - Pista->gety1());
+      //deltax2 = (Pista->getx2() - Pista->getx1());
+      //deltay2 = (Pista->gety2() - Pista->gety1());
+      //theta = atan2(deltay2, deltax2)*180/M_PI;
 
-      x2a = Pista->getx2() - mid1;
-      y2a = Pista->gety2() - mid2;
+      fator = z + thetaHelice*1.5;
+      angCanhao = fator * 2* M_PI/1000;
+      xc = Aviao->getx() + (cos(angCanhao) * 1.3*vel);
+      yc = Aviao->gety() + (sin(angCanhao) * 1.3*vel);
+      deltx = abs(xc - Aviao->getx());
+      delty = abs(yc - Aviao->gety());
+      //z=z+2+vel;
+      //angCanhao
+      //angulo = z * 2 * M_PI / 1000;
 
-      x1 = cos(fator*thetaHelice)*x1a - sin(fator*thetaHelice)*y1a;
-      y1 = sin(fator*thetaHelice)*x1a + cos(fator*thetaHelice)*y1a;
-
-      x2 = cos(fator*thetaHelice)*x2a - sin(fator*thetaHelice)*y2a;
-      y2 = sin(fator*thetaHelice)*x2a + cos(fator*thetaHelice)*y2a;
-
-      x1 += mid1;
-      y1 += mid2;
-      x2 += mid1;
-      y2 += mid2;
-      */
-      bomba = new Bomba(vel, Aviao->getRaio()/12, Aviao->getx(), Aviao->gety(), 1,1,1, deltax, deltay, Pista->getx1(), Pista->getx2(), Pista->gety1(), Pista->gety2(), 1, 0);
+      bomba = new Bomba(vel, Aviao->getRaio()/12, xc, yc, 1,1,1, deltx, delty, Aviao->getx(), xc, Aviao->gety(), yc, 1, 0);
       bombas.push_front(bomba);
       }
 
@@ -854,7 +852,7 @@ void keyPress(unsigned char key, int x, int y)
              deltax2 = deltaxOriginal;
              deltay2 = deltayOriginal;
              theta = thetaOriginal;
-             z=0;
+             z=zOriginal;
              bombas.clear();
              gameover = false;
              lose = false;
@@ -866,6 +864,7 @@ void keyPress(unsigned char key, int x, int y)
                   if((*it)->getTipo() == 2) {
                   (*it)->setx((*it)->xini);
                   (*it)->sety((*it)->yini);
+                  (*it)->ajuste = false;
                   }
                   inimigos.push_front(*it);
              }
@@ -962,7 +961,7 @@ void moveInimigos() {
       }
     }
 
-    if ((*it)->getTipo() == 2)
+    if ((*it)->getTipo() == 10)
     {
         if((*it)->deltax > 0 && (*it)->deltay == 0) { // Pista reta horizontalmente
 
@@ -1400,11 +1399,13 @@ void idle(int x)
 
                 thetaCanhao += 2*vel/6;
                 angulo = z * 2 * M_PI / 1000;
+                angCanhao = angulo;
                 //printf("ang:%f\n", angulo);
                 //theta = atan2(deltay2, deltax2)*180/M_PI;
                 //printf("%.3f\n", theta);
                 Aviao->setx(Aviao->getx() + (cos(angulo) * 1.3*vel));
                 Aviao->sety(Aviao->gety() + (sin(angulo) * 1.3*vel));
+                if(vel != 0)
                 z=z+2+vel;
                 if(z == 1000)
                 z=0;
@@ -1419,10 +1420,12 @@ void idle(int x)
                //float angulo;
                 thetaCanhao += 2*vel/6;
                 angulo = z * 2 * M_PI / 1000;
+                angCanhao = angulo;
                 //theta = atan2(deltay2, deltax2)*180/M_PI;
                 //printf("%.3f\n", theta);
                 Aviao->setx(Aviao->getx() + (cos(angulo) * 1.3*vel));
                 Aviao->sety(Aviao->gety() + (sin(angulo) * 1.3*vel));
+                if(vel != 0)
                 z=z-2-vel;
                 if(z == -1000)
                 z=0;
@@ -2105,28 +2108,15 @@ int main(int argc, char *argv[])
 
   srand (time(NULL));
     
-    if(argc != 2) {
+  if(argc != 2) {
   printf("[USO]: ./trabalhocg <argumento1>\n");
   exit(0);
   }
 
-  // leitura do XML
-  //char *dir;
-  //dir = get_current_dir_name();
-  //char *argumento;
-  //strcpy(argumento, dir);
-  //std::string filename = argv[1];
-  //strcat(dir, argv[1]);
-  //strcat(dir, "config.xml");
-  //cout << argumento;
-  //cout << argv[1];
+  std::string input = argv[1];
+  std::string arqConfig = input + "config.xml";
 
-  char cwd[512];
-  strcat(cwd, argv[1]);
-  strcat(cwd, "config.xml");
-  //cout << cwd;
-
-  TiXmlDocument doc(cwd);
+  TiXmlDocument doc(arqConfig.c_str());
 
   if(!doc.LoadFile()) {
     cout << "Nao foi possivel localizar o arquivo config.xml\n";
@@ -2151,14 +2141,12 @@ int main(int argc, char *argv[])
   velocidade = atof(leitura->Attribute("vel"));
   velTiro = atof(leitura->Attribute("velTiro"));
 
-  // fim da leitura do primeiro XML
-  char *nomeSVG = strdup(nome);
-  char *tipoSVG = strdup(tipo);
-  strcat(nomeSVG, ".");
-  strcat(nomeSVG, tipoSVG);
-  strcat((char*)caminho, nomeSVG);
-  //cout << caminho;
-  TiXmlDocument doc2(caminho);
+  std::string nomeArq = nome;
+  std::string tipoArq = tipo;
+  std::string caminhoArq = caminho;
+  std::string arqSVG = caminhoArq + nomeArq + "." + tipoArq;
+
+  TiXmlDocument doc2(arqSVG.c_str());
    if(!doc2.LoadFile()) {
     cout << "Nao foi possivel localizar o arquivo arena.svg\n";
     exit(0);
@@ -2265,7 +2253,8 @@ int main(int argc, char *argv[])
    tangente = atan2(deltay2, deltax2);
    thetaOriginal = tangente*180/M_PI;
    theta = thetaOriginal;
-   z=-100;
+   z=thetaOriginal*100/36;
+   zOriginal = z;
    //z = (thetaOriginal*1000);
    printf("%f\n", theta);
 

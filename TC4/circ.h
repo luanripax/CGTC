@@ -7,7 +7,7 @@ class Circulo
   int tipo;
   public:
     float deltax, deltay, deltax2, deltay2, z, xini, yini;
-    bool rodar;
+    bool rodar, ajuste;
     int quadros, direcao, tempo, tiros;
     Circulo(float raio, float x, float y, float R, float G, float B, int tipo);
     float getRaio();

@@ -46,12 +46,14 @@ Circulo::Circulo(float raio, float x, float y, float R, float G, float B, int ti
     this->deltax2 = this->x - this->xAnt;
     this->deltay2 = this->y - this->yAnt;
     this->theta = atan2(this->deltay2, this->deltax2)*180/M_PI;
+    printf("ang: %f\n", this->theta);
     this->quadros = rand() % 60;
     this->rodar = false;
-    this->z = this->theta*1000;
+    this->z = this->theta*100/36;
     this->tiros = 0;
     this->xini= x;
     this->yini = y;
+    this->ajuste = false;
   }
   this->xAnt = 0;
   this->yAnt = 0;
@@ -67,6 +69,11 @@ void Circulo::update() {
   this->deltax2 = this->x - this->xAnt;
   this->deltay2 = this->y - this->yAnt;
   this->theta = atan2(this->deltay2, this->deltax2)*180/M_PI;
+  if(!this->ajuste) {
+    this->z = this->theta*100/36;
+    this->ajuste = true;
+  }
+
   //this->z = this->theta*1000;
 
 }
